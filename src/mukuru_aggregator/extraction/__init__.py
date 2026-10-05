@@ -1,6 +1,6 @@
 # extraction/__init__.py
 
-from mukuru_aggregator.extraction.excel import (
+from .excel import (
     extract_data,
     log_extraction_summary,
 )

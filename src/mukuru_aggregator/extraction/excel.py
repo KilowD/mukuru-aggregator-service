@@ -1,10 +1,16 @@
 import logging
+from pathlib import Path
 
 import pandas as pd
 
 
 logger = logging.getLogger(__name__)
 
+def _validate_file(file_path: Path) -> None:
+    if not file_path.is_file():
+        raise FileNotFoundError(
+            f"Excel file not found: {file_path}"
+        )
 
 # EXTRACT
 # pd.ExcelFile() → opens/prepares the workbook for access
@@ -12,7 +18,10 @@ logger = logging.getLogger(__name__)
 
 # This function returns a dictionary where the keys are strings and the values are Pandas DataFrames
 # FILE_PATH is passed by __main__
-def extract_data(file_path: str) -> dict[str, pd.DataFrame]:
+def extract_data(file_path: Path) -> dict[str, pd.DataFrame]:
+
+    _validate_file(file_path)
+
     workbook = pd.ExcelFile(file_path)
 
     logger.info(

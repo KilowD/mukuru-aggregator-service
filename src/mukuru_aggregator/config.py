@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 
 from dotenv import load_dotenv
 from sqlalchemy import create_engine
@@ -10,11 +11,14 @@ from sqlalchemy import create_engine
 load_dotenv()
 
 
-# CONFIGURATION
-FILE_PATH = os.getenv(
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+
+
+FILE_PATH = PROJECT_ROOT / os.getenv(
     "FILE_PATH",
-    r"C:\Users\sinyo\Downloads\Aggregator Service STAGE Data.xlsx",
+    "data/raw/Aggregator Service STAGE Data.xlsx",
 )
+
 
 DB_SERVER = os.getenv(
     "DB_SERVER",
