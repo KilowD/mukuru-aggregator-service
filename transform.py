@@ -110,7 +110,7 @@ def transform_provider_calculation(transactions):
 
 if __name__ == "__main__":
 
-    from extract import extract_data
+    from mukuru_aggregator.extraction.excel import extract_data
 
     data = extract_data()
 

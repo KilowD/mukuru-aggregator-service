@@ -1,31 +1,29 @@
-import pandas as pd
 import logging
-import json
 
-from config import FILE_PATH
+import pandas as pd
 
 
-# CONFIGURE LOGGING
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s - %(levelname)s - %(message)s",
-)
+logger = logging.getLogger(__name__)
+
 
 # EXTRACT
 # pd.ExcelFile() → opens/prepares the workbook for access
 # pd.read_excel() → reads a specific sheet into a DataFrame
 
-def extract_data():
+# This function returns a dictionary where the keys are strings and the values are Pandas DataFrames
+# FILE_PATH is passed by __main__
+def extract_data(file_path: str) -> dict[str, pd.DataFrame]:
+    workbook = pd.ExcelFile(file_path)
 
-    workbook = pd.ExcelFile(FILE_PATH)
-
-    logging.info(
+    logger.info(
         "Workbook sheet_names: %s",
         workbook.sheet_names,
     )
 
-    # create an empty dictionary called data
-    data = {}
+    # Create an empty dictionary where:
+    # key = sheet name (str)
+    # value = DataFrame
+    data: dict[str, pd.DataFrame] = {}
 
     # Read each sheet and store the DataFrame in the dictionary.
     # Sheet name = key, DataFrame = value.
@@ -38,18 +36,12 @@ def extract_data():
 
     return data
 
-
-# RUN EXTRACTION FILE : Only execute the code below if this file is being run directly
-if __name__ == "__main__":
-
-    extracted_data = extract_data()
-
+# extracted_data is passed by __main__
+def log_extraction_summary(extracted_data: dict[str, pd.DataFrame]) -> None:
     for sheet_name, df in extracted_data.items():
-
-        logging.info(
+        logger.info(
             "Worksheet extracted successfully: %s, %s records",
             sheet_name,
             len(df),
         )
-
 

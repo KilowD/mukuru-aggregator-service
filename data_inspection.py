@@ -1,7 +1,7 @@
 import pandas as pd
 import logging
 
-from config import FILE_PATH
+from src.mukuru_aggregator.config import FILE_PATH
 
 
 

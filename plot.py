@@ -3,7 +3,7 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 
-from extract import extract_data
+from mukuru_aggregator.extraction.excel import extract_data
 
 extracted_data = extract_data()
 

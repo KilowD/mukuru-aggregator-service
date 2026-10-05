@@ -1,0 +1,5 @@
+Metadata-Version: 2.4
+Name: mukuru-aggregator-service
+Version: 0.1.0
+Summary: Mukuru Aggregator Service data engineering project
+Requires-Python: >=3.14

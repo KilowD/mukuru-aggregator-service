@@ -1,0 +1,11 @@
+pyproject.toml
+src/mukuru_aggregator/__init__.py
+src/mukuru_aggregator/config.py
+src/mukuru_aggregator/extraction/__init__.py
+src/mukuru_aggregator/extraction/excel.py
+src/mukuru_aggregator/loading/__init__.py
+src/mukuru_aggregator/transformation/__init__.py
+src/mukuru_aggregator_service.egg-info/PKG-INFO
+src/mukuru_aggregator_service.egg-info/SOURCES.txt
+src/mukuru_aggregator_service.egg-info/dependency_links.txt
+src/mukuru_aggregator_service.egg-info/top_level.txt
