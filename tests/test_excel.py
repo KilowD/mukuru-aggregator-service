@@ -18,7 +18,6 @@ def test_validate_file_exists(tmp_path: Path) -> None:
 
     _validate_file(test_file)
 
-# ==================================================================================================
 
 def test_validate_file_missing(tmp_path: Path) -> None:
     test_file = tmp_path / "missing.xlsx"
@@ -26,7 +25,6 @@ def test_validate_file_missing(tmp_path: Path) -> None:
     with pytest.raises(FileNotFoundError):
         _validate_file(test_file)
 
-# ==================================================================================================
 
 def test_extract_data(tmp_path: Path) -> None:
     test_file = tmp_path / "test.xlsx"
@@ -87,7 +85,6 @@ def test_extract_data(tmp_path: Path) -> None:
         products,
     )
 
-    # =========================================================================================================
 
 def test_extract_data_file_missing(tmp_path: Path) -> None:
     test_file = tmp_path / "missing.xlsx"
@@ -95,7 +92,6 @@ def test_extract_data_file_missing(tmp_path: Path) -> None:
     with pytest.raises(FileNotFoundError):
         extract_data(test_file)
 
-# ==============================================================================================================
 
 def test_log_extraction_summary(caplog) -> None:
 
