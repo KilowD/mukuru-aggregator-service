@@ -1,11 +1,13 @@
 import logging
 from pathlib import Path
+from typing import cast
 
 import pandas as pd
 
 
 logger = logging.getLogger(__name__)
 
+# Check whether the file exists
 def _validate_file(file_path: Path) -> None:
     if not file_path.is_file():
         raise FileNotFoundError(
@@ -36,13 +38,13 @@ def extract_data(file_path: Path) -> dict[str, pd.DataFrame]:
 
     # Read each sheet and store the DataFrame in the dictionary.
     # Sheet name = key, DataFrame = value.
+    # cast signals to typechecker that this is a DataFrame in this case
     for sheet in workbook.sheet_names:
 
-        data[sheet] = pd.read_excel(
-            workbook,
-            sheet_name=sheet,
+        data[sheet] = cast(
+            pd.DataFrame,
+            pd.read_excel(workbook,sheet_name=sheet)
         )
-
     return data
 
 # extracted_data is passed by __main__
