@@ -109,8 +109,8 @@ def extract_transaction_fee(normalized: pd.DataFrame) -> pd.DataFrame:
 
     fee_normalized.index = normalized.index
 
-    normalized["TRANSACTION_FEE_VALUE"] = fee_normalized["value"]
-    normalized["TRANSACTION_FEE_CURRENCY"] = fee_normalized["currency"]
+    normalized["TRANSACTION_FEE_VALUE"] = fee_normalized.get("value")
+    normalized["TRANSACTION_FEE_CURRENCY"] = fee_normalized.get("currency")
 
     return normalized
 

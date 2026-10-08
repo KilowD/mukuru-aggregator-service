@@ -1,9 +1,20 @@
-# File: tests/test_cleaning.py
-from json.decoder import NaN
-
 import pandas as pd
 import pytest
-from src.mukuru_aggregator.transformation.cleaning import transform_pay_in_amount
+from mukuru_aggregator.transformation.cleaning import (
+    extract_transaction_fee,
+    normalize_provider_calculation,
+    parse_amount,
+    parse_provider_calculation,
+    transform_pay_in_amount,
+)
+
+
+def test_parse_amount():
+    value = '{"value": 80.0, "currency": "ZAR"}'
+
+    result = parse_amount(value)
+
+    assert result == (80.0, "ZAR")
 
 
 def test_transform_pay_in_amount_with_valid_data():
@@ -79,3 +90,152 @@ def test_transform_pay_in_amount_with_mixed_data_types():
     assert result["PAY_IN_AMOUNT_VALUE"].dropna().tolist() == [50.0, 75.5]
     assert result["PAY_IN_AMOUNT_CURRENCY"].isna().tolist() == [False, True, True, False]
     assert result["PAY_IN_AMOUNT_CURRENCY"].dropna().tolist() == ["GBP", "USD"]
+
+# Does parse_provider_calculation() correctly convert each JSON string into a Python dictionary?
+def test_parse_provider_calculation():
+    values = pd.Series(
+        [
+            '{"rate": {"rate": 17.5}}',
+            '{"rate": {"rate": 18.2}}',
+        ]
+    )
+
+    result = parse_provider_calculation(values)
+
+    assert result.iloc[0] == {"rate": {"rate": 17.5}}
+    assert result.iloc[1] == {"rate": {"rate": 18.2}}
+
+
+def test_parse_provider_calculation_with_invalid_data():
+
+    values = pd.Series(
+        [
+            "{invalid_json}",
+            None,
+            12345,
+        ]
+    )
+
+    result = parse_provider_calculation(values)
+
+    assert result.iloc[0] is None
+    assert result.iloc[1] is None
+    assert result.iloc[2] is None
+
+
+def test_normalize_provider_calculation():
+
+    provider_calculations = pd.Series(
+        {
+            10: {
+                "rate": {
+                    "rate": 17.5,
+                    "inverted": False,
+                    "payOutCurrency": "ZAR",
+                    "settlementCurrency": "USD",
+                },
+                "payoutAmount": {
+                    "value": 1750.0,
+                    "currency": "ZAR",
+                },
+                "settlementAmount": {
+                    "value": 100.0,
+                    "currency": "USD",
+                },
+                "fees": [
+                    {
+                        "value": 5.00,
+                        "currency": "ZAR",
+                    }
+                ],
+            }
+        }
+    )
+
+    result = normalize_provider_calculation(provider_calculations)
+
+    assert result.loc[10, "RATE"] == 17.5
+    assert result.loc[10, "RATE_INVERTED"] == False
+    assert result.loc[10, "PAYOUT_CURRENCY"] == "ZAR"
+    assert result.loc[10, "SETTLEMENT_CURRENCY"] == "USD"
+    assert result.loc[10, "PAYOUT_AMOUNT_VALUE"] == 1750.0
+    assert result.loc[10, "PAYOUT_AMOUNT_CURRENCY"] == "ZAR"
+    assert result.loc[10, "SETTLEMENT_AMOUNT_VALUE"] == 100.0
+    assert result.loc[10, "SETTLEMENT_AMOUNT_CURRENCY"] == "USD"
+    assert isinstance(result.loc[10, "fees"], list)
+
+    assert result.loc[10, "fees"] == [
+        {
+            "value": 5.00,
+            "currency": "ZAR",
+        }
+    ]
+
+    assert result.index.tolist() == [10]
+
+
+def test_extract_transaction_fee():
+
+    normalized = pd.DataFrame(
+        {
+            "fees": [
+                [
+                    {
+                        "value": 5.00,
+                        "currency": "ZAR",
+                    }
+                ]
+            ]
+        },
+        index=[10],
+    )
+
+    result = extract_transaction_fee(normalized)
+
+    assert result.loc[10, "TRANSACTION_FEE_VALUE"] == 5.00
+    assert result.loc[10, "TRANSACTION_FEE_CURRENCY"] == "ZAR"
+
+    assert result.index.tolist() == [10]
+
+
+def test_extract_transaction_fee_with_empty_fees():
+
+    normalized = pd.DataFrame(
+        {
+            "fees": [
+                []
+            ]
+        },
+        index=[10],
+    )
+
+    result = extract_transaction_fee(normalized)
+
+    assert pd.isna(result.loc[10, "TRANSACTION_FEE_VALUE"])
+    assert pd.isna(result.loc[10, "TRANSACTION_FEE_CURRENCY"])
+
+
+def test_extract_transaction_fee_uses_first_fee():
+
+    normalized = pd.DataFrame(
+        {
+            "fees": [
+                [
+                    {
+                        "value": 5.00,
+                        "currency": "ZAR",
+                    },
+                    {
+                        "value": 2.00,
+                        "currency": "USD",
+                    },
+                ]
+            ]
+        },
+        index=[10],
+    )
+
+    result = extract_transaction_fee(normalized)
+
+    assert result.loc[10, "TRANSACTION_FEE_VALUE"] == 5.00
+    assert result.loc[10, "TRANSACTION_FEE_CURRENCY"] == "ZAR"
