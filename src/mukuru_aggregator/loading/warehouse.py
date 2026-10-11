@@ -160,4 +160,4 @@ def load_staging_data(dataframes: dict[str, pd.DataFrame], engine,) -> None:
             engine=engine,
         )
 
-    logger.info("All staging DataFrames loaded successfully")
+    logger.info("All staging DataFrames loaded to the Database successfully")
