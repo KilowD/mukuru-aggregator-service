@@ -115,7 +115,6 @@ def extract_transaction_fee(normalized: pd.DataFrame) -> pd.DataFrame:
     return normalized
 
 
-
 def transform_provider_calculation(transformed: pd.DataFrame) -> pd.DataFrame:
 
     provider_calculations = parse_provider_calculation(transformed["PROVIDER_CALCULATION"])
