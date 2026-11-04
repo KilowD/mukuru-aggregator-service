@@ -39,10 +39,9 @@ def create_engine_connection():
     return engine
 
 
-# Starting from warehouse.py, Python navigates to the mukuru_aggregator package directory, then into sql, and locates the file.
-# This works regardless of which directory you launch the program from.
-# parents[0] = loading , parents[1] = warehouse   with reference to starting point  warehouse.py
-
+# Drop every staging table named in the package SQL script.
+# The script path is resolved from this file, so it does not depend on the
+# working directory. parents[1] is the mukuru_aggregator package directory.
 def drop_staging_tables(engine) -> None:
     sql_file = (
         Path(__file__).resolve().parents[1]
@@ -52,7 +51,7 @@ def drop_staging_tables(engine) -> None:
 
     sql_script = sql_file.read_text(encoding="utf-8")
 
-    # Extract table names from DROP TABLE statements
+    # Parsed only for the log line. The script itself performs the drops.
     staging_tables = re.findall(
         r"DROP\s+TABLE\s+IF\s+EXISTS\s+([^\s;]+)",
         sql_script,
@@ -69,6 +68,8 @@ def drop_staging_tables(engine) -> None:
 
 
 
+# Recreate the staging tables from the package SQL script.
+# Same path rule as drop_staging_tables: parents[1] is the package directory.
 def create_staging_tables(engine) -> None:
     sql_file = (
         Path(__file__).resolve().parents[1]
@@ -78,7 +79,7 @@ def create_staging_tables(engine) -> None:
 
     sql_script = sql_file.read_text(encoding="utf-8")
 
-    # Extract table names from CREATE TABLE statements
+    # Parsed only for the log line. The script itself creates the tables.
     staging_tables = re.findall(
         r"CREATE\s+TABLE\s+([^\s(]+)",
         sql_script,
@@ -95,11 +96,11 @@ def create_staging_tables(engine) -> None:
 
 
 
+# Append one DataFrame to schema.table.
+# Schema and table are SQL identifiers, so only a plain name is accepted.
+# That keeps a bad value from selecting a different object.
 def load_dataframe(dataframe: pd.DataFrame, schema: str, table: str,engine,) -> None:
 
-    # the first character must be a letter or underscore.
-    # subsequent characters can be letters, digits or underscores.
-    # the entire string must match the pattern.
     if not re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", schema):
         raise ValueError(f"Invalid schema name: {schema}")
 
@@ -132,6 +133,8 @@ def load_dataframe(dataframe: pd.DataFrame, schema: str, table: str,engine,) -> 
     )
 
 
+# Load each required workbook sheet into its stg table.
+# Sheet names come from the Excel file; table names are the staging names.
 def load_staging_data(dataframes: dict[str, pd.DataFrame], engine,) -> None:
     table_mapping = {
         "PARTNER ACCOUNTS": "partner_accounts",
