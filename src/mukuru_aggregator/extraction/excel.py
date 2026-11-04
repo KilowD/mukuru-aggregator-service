@@ -14,12 +14,12 @@ def _validate_file(file_path: Path) -> None:
             f"Excel file not found: {file_path}"
         )
 
-# EXTRACT
-# pd.ExcelFile() → opens/prepares the workbook for access
-# pd.read_excel() → reads a specific sheet into a DataFrame
 
-# This function returns a dictionary where the keys are strings and the values are Pandas DataFrames
-# FILE_PATH is passed by __main__
+# Read every worksheet into memory.
+# Returns sheet name -> DataFrame. The caller (see __main__) passes the path.
+#
+# pd.ExcelFile opens the workbook once. pd.read_excel then reads one sheet
+# from that open workbook, so the file is not reopened for every sheet.
 def extract_data(file_path: Path) -> dict[str, pd.DataFrame]:
 
     _validate_file(file_path)
@@ -31,23 +31,22 @@ def extract_data(file_path: Path) -> dict[str, pd.DataFrame]:
         workbook.sheet_names,
     )
 
-    # Create an empty dictionary where:
-    # key = sheet name (str)
-    # value = DataFrame
+    # Key is the sheet name. Value is that sheet's rows.
     data: dict[str, pd.DataFrame] = {}
 
-    # Read each sheet and store the DataFrame in the dictionary.
-    # Sheet name = key, DataFrame = value.
-    # cast signals to typechecker that this is a DataFrame in this case
     for sheet in workbook.sheet_names:
-
+        # A single sheet_name always returns one DataFrame. cast tells the
+        # type checker that, because read_excel's declared return type also
+        # covers the case where several sheets are requested at once.
         data[sheet] = cast(
             pd.DataFrame,
-            pd.read_excel(workbook,sheet_name=sheet)
+            pd.read_excel(workbook, sheet_name=sheet)
         )
     return data
 
-# extracted_data is passed by __main__
+
+# Log one line per sheet: name and row count. Does not change the data.
+# The caller passes the dict returned by extract_data.
 def log_extraction_summary(extracted_data: dict[str, pd.DataFrame]) -> None:
     for sheet_name, df in extracted_data.items():
         logger.info(
@@ -55,4 +54,3 @@ def log_extraction_summary(extracted_data: dict[str, pd.DataFrame]) -> None:
             sheet_name,
             len(df),
         )
-
