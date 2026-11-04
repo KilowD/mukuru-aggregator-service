@@ -119,7 +119,7 @@ def load_dataframe(dataframe: pd.DataFrame, schema: str, table: str,engine,) -> 
         schema=schema,
         if_exists="append",
         index=False,
-        chunksize=1000,
+        chunksize=100,
     )
 
     logger.info(
